@@ -56,11 +56,10 @@ def get_product(request, pk):
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
-
 @api_view(['POST'])
 @authentication_classes([Authentication])
 @permission_classes([SellerPermission])
-def add_product_details(request):
+def add_product(request):
     try:
         data = deepcopy(request.data)
         data["seller"] = Seller.objects.get(user=request.user.id).id
@@ -77,7 +76,7 @@ def add_product_details(request):
 @api_view(['PUT'])
 @authentication_classes([Authentication])
 @permission_classes([SellerPermission])
-def edit_product_details(request):
+def edit_product(request):
     try:
         product, seller = check_product_ownership(request)
 
@@ -100,12 +99,13 @@ def edit_product_details(request):
 def delete_product(request):
     try:
         product, seller = check_product_ownership(request)
+        for image in product.images.all():
+            image.delete()
         product.delete()
         return Response({"message": "Product deleted successfully"}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
         
-
 @api_view(['POST'])
 @authentication_classes([Authentication])
 @permission_classes([SellerPermission])
@@ -116,7 +116,9 @@ def add_product_image(request):
         serializer = ImageSerializer(data=request.data)
 
         if serializer.is_valid():
-            serializer.save()
+            image = serializer.save()
+            product.images.add(image)
+            product.save()
             return Response({"message":"Image uploaded successfully", "data": serializer.data}, status=200)
         else:
             return Response({"error": serializer.errors}, status=400)
@@ -209,7 +211,6 @@ def get_categories(request):
     except Exception as e:
         return Response({"error": str(e)}, status=400)
     
-
 @api_view(['GET'])
 @authentication_classes([Authentication])
 def get_sub_categories(request, pk):
