@@ -25,10 +25,10 @@ class Product(BaseModel):
     category = models.ForeignKey(Category, related_name="product", on_delete=models.CASCADE)
     sub_category = models.ForeignKey(SubCategory, related_name="product", on_delete=models.CASCADE)
     variant = models.ForeignKey(Variant, related_name="product", on_delete=models.SET_NULL, null=True, blank=True)
-    compliance_score = models.DecimalField(max_digits=20, decimal_places=5)
-    completeness_score = models.DecimalField(max_digits=20, decimal_places=5)
-    correctness_score = models.DecimalField(max_digits=20, decimal_places=5)
-    catalogue_score = models.DecimalField(max_digits=20, decimal_places=5)
+    compliance_score = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True)
+    completeness_score = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True)
+    correctness_score = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True)
+    catalogue_score = models.DecimalField(max_digits=20, decimal_places=5, null=True, blank=True)
     images = models.ManyToManyField(Image, related_name="product", blank=True)
 
     def __str__(self):

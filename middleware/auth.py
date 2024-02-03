@@ -22,7 +22,7 @@ class Authentication(authentication.BaseAuthentication):
                     payload = jwt.decode(token, SECRET, algorithms=ALGO)
                 except jwt.InvalidSignatureError:    
                     raise exceptions.AuthenticationFailed('Token Invalid')
-                except jwt.ExpiredTokenError:
+                except jwt.ExpiredSignatureError:
                     raise exceptions.AuthenticationFailed('Token Expired')
                 except IndexError:
                     raise exceptions.AuthenticationFailed('Token prefix missing')

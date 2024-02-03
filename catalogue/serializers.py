@@ -29,7 +29,13 @@ class ImageSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProductSerializer(serializers.ModelSerializer):
-    
+
+    compliance_score = serializers.DecimalField(read_only=True, max_digits=20, decimal_places=5)
+    completeness_score = serializers.DecimalField(read_only=True, max_digits=20, decimal_places=5)
+    correctness_score = serializers.DecimalField(read_only=True, max_digits=20, decimal_places=5)
+    catalogue_score = serializers.DecimalField(read_only=True, max_digits=20, decimal_places=5)
+    images = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
     class Meta:
         model = Product
         fields = '__all__'

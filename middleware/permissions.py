@@ -11,7 +11,7 @@ class SellerPermission(permissions.BasePermission):
         if Seller.objects.filter(user=request.user).exists():
             return True
         else:
-            raise exceptions.PermissionDenied('Forbidden')
+            raise exceptions.PermissionDenied('Not a Seller')
         
 class BuyerPermission(permissions.BasePermission):
 
@@ -21,6 +21,6 @@ class BuyerPermission(permissions.BasePermission):
         if Buyer.objects.filter(user=request.user).exists():
             return True
         else:
-            raise exceptions.PermissionDenied('Forbidden')
+            raise exceptions.PermissionDenied('Not a Buyer')
 
 
