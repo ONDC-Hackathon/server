@@ -79,7 +79,11 @@ def login_seller(request):
 
         token = jwt.encode(payload, 'SECRET', algorithm='HS256')
 
-        return Response({"message": "Seller Login Sucessful", "token": token}, status=201)
+        data = dict()
+        data["user"] = UserSerializer(user).data
+        data["seller"] = SellerSerializer(seller).data
+
+        return Response({"message": "Seller Login Sucessful", "token": token, "data": data}, status=201)
 
     except Exception as e:
         return Response({"error": str(e)}, status=400)
@@ -109,7 +113,11 @@ def login_buyer(request):
 
         token = jwt.encode(payload, 'SECRET', algorithm='HS256')
 
-        return Response({"message": "Buyer Login Sucessful", "token": token}, status=201)
+        data = dict()
+        data["user"] = UserSerializer(user).data
+        data["buyer"] = BuyerSerializer(buyer).data
+
+        return Response({"message": "Buyer Login Sucessful", "token": token, "data": data}, status=201)
 
     except Exception as e:
         return Response({"error": str(e)}, status=400)

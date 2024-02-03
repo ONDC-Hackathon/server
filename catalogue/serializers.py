@@ -41,11 +41,15 @@ class ProductSerializer(serializers.ModelSerializer):
     completeness_score = serializers.DecimalField(read_only=True, max_digits=20, decimal_places=5)
     correctness_score = serializers.DecimalField(read_only=True, max_digits=20, decimal_places=5)
     catalogue_score = serializers.DecimalField(read_only=True, max_digits=20, decimal_places=5)
-    images = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    images = serializers.SerializerMethodField(read_only=True)
+    
 
     class Meta:
         model = Product
         fields = '__all__'
+
+    def get_images(self, obj):
+        return ImageSerializer(obj.images.all(), many=True).data
 
 class ProductAttributeSerializer(serializers.ModelSerializer):
 
