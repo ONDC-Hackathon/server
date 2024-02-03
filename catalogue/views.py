@@ -27,21 +27,22 @@ def add_product_details(request):
 @api_view(['POST'])
 @authentication_classes([Authentication])
 @permission_classes([SellerPermission])
-def add_product_images(request):
+def add_product_image(request):
     try:
         product = Product.objects.filter(id=request.data['product_id']).first()
         if product is None:
-            return Response({"error": "Product not found"})
+            return Response({"error": "Product not found"}, status=400)
         
         seller = Seller.objects.get(user=request.user.id)
         if product.seller.id != seller.id:
             return Response({"error": "Not Allowed"}, status=403)
-        
-        for image in request.FILES:
-            print(request.FILES[image])
-            # Yet to be completed
 
-        return Response({"message": "Images uploaded successfully"}, status=200)
+        serializer = ImageSerializer(data=request.data)
 
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message":"Image uploaded successfully", "image": serializer.data}, status=200)
+        else:
+            return Response({"error": serializer.errors}, status=400)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
