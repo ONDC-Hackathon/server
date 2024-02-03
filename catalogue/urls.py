@@ -5,4 +5,5 @@ from .views import *
 urlpatterns = [
     path("add_product_details/", add_product_details, name="add-product-details"),
     path("add_product_image/", add_product_image, name="add-product-image"),
+    path("add_product_attributes/", add_product_attributes, name="add-product-attributes"),
 ]

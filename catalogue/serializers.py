@@ -3,6 +3,7 @@ from .models.categories import *
 from .models.attributes import *
 from .models.images import *
 from .models.products import *
+from .models.relations import *
 
 class CategorySerializer(serializers.ModelSerializer):
 
@@ -38,4 +39,10 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
+        fields = '__all__'
+
+class ProductAttributeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProductAttribute
         fields = '__all__'
