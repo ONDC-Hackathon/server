@@ -17,6 +17,12 @@ class SubCategorySerializer(serializers.ModelSerializer):
         model = SubCategory
         fields = '__all__'
 
+class VariantSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Variant
+        fields = '__all__'
+
 class AttributeSerializer(serializers.ModelSerializer):
 
     class Meta:

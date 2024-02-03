@@ -8,6 +8,8 @@ from .serializers import *
 from rest_framework import exceptions
 
 
+# Product APIs
+
 def check_product_ownership(request):
     product = Product.objects.filter(id=request.data['product_id']).first()
     if product is None:
@@ -75,3 +77,54 @@ def add_product_attributes(request):
         
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+    
+@api_view(['GET'])
+@authentication_classes([Authentication])
+def get_categories(request):
+    try:
+        categories = Category.objects.all()
+        serializer = CategorySerializer(categories, many=True)
+        return Response({"message": "Categories fetched successfully", "categories": serializer.data}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+    
+
+@api_view(['GET'])
+@authentication_classes([Authentication])
+def get_sub_categories(request, pk):
+    try:
+        category = Category.objects.get(id=pk)
+        sub_categories = SubCategory.objects.filter(category=category)
+        serializer = SubCategorySerializer(sub_categories, many=True)
+        return Response({"message": "Sub-Categories fetched successfully", "sub_categories": serializer.data}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+    
+@api_view(['GET'])
+@authentication_classes([Authentication])
+def get_variants(request, pk):
+    try:
+        sub_category = SubCategory.objects.get(id=pk)
+        variants = Variant.objects.filter(sub_category=sub_category)
+        serializer = VariantSerializer(variants, many=True)
+        return Response({"message": "Variants fetched successfully", "variants": serializer.data}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+    
+@api_view(['GET'])
+@authentication_classes([Authentication])
+def get_attributes(request):
+    try:
+        attributes = Attribute.objects.all()
+        if "category" in request.GET:
+            attributes = attributes.filter(category=request.GET["category"])
+        if "sub_category" in request.GET:
+            attributes = attributes.filter(sub_category=request.GET["sub_category"])
+        if "variant" in request.GET:
+            attributes = attributes.filter(variant=request.GET["variant"])
+
+        serializer = AttributeSerializer(attributes, many=True)
+        return Response({"message": "Variants fetched successfully", "attributes": serializer.data}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+    
