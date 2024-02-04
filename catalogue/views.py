@@ -6,8 +6,6 @@ from middleware.permissions import SellerPermission
 from copy import deepcopy
 from .serializers import *
 from rest_framework import exceptions
-
-
 # Product APIs
 
 def check_product_ownership(request):
@@ -200,7 +198,91 @@ def delete_product_attributes(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
+@api_view(['GET'])
+@authentication_classes([Authentication])
+@permission_classes([SellerPermission])
+def get_rules(request):
+    try:
+        rules = Rule.objects.all()
+        if "category" in request.GET:
+            rules = Rule.objects.filter(category=request.GET["category"])
+        if "sub_category" in request.GET:
+            rules = Rule.objects.filter(sub_category=request.GET["sub_category"])
+        if "variant" in request.GET:
+            rules = Rule.objects.filter(variant=request.GET["variant"])
+        serializer = RuleSerializer(rules, many=True)
+        return Response({"message": "Rules fetched successfully", "data": serializer.data}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
     
+@api_view(['GET'])
+@authentication_classes([Authentication])
+@permission_classes([SellerPermission])
+def get_rule(request, pk):
+    try:
+        rule = Rule.objects.get(id=pk)
+        serializer = RuleSerializer(rule)
+        return Response({"message": "Rule fetched successfully", "data": serializer.data}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+@api_view(['GET'])
+@authentication_classes([Authentication])
+@permission_classes([SellerPermission])
+def get_product_rules(request, product_id):
+    try:
+        product = Product.objects.get(id=product_id)
+        product_rules = ProductRule.objects.filter(product=product)
+        serializer = ProductRuleSerializer(product_rules, many=True)
+        return Response({"message": "Product-Rules fetched successfully", "data": serializer.data}, )
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+    
+@api_view(['GET'])
+@authentication_classes([Authentication])
+@permission_classes([SellerPermission])
+def get_product_rule(request, product_id, pk):
+    try:
+        product = Product.objects.get(id=product_id)
+        if product.seller.user != request.user:
+            return Response({"error":"Not Allowed"}, status=403)
+        product_rule = ProductRule.objects.filter(product=product).get(id=pk)
+        serializer = ProductRuleSerializer(product_rule)
+        return Response({"message": "Product-Rules fetched successfully", "data": serializer.data}, )
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+ 
+@api_view(['POST'])
+@authentication_classes([Authentication])
+@permission_classes([SellerPermission])
+def add_product_rules(request):
+    try:
+        product, seller = check_product_ownership(request)
+        data = [{ "product": product.id, "rule": rule } for rule in request.data["product_rules"]]
+        serializer = ProductRuleSerializer(data=data, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Product-Rule added successfully", "data": serializer.data}, status=200)
+        else:
+            return Response({"error": serializer.errors}, status=400)
+    except Exception as e:
+        return Response({"error":str(e)}, status=400)
+    
+@api_view(['DELETE'])
+@authentication_classes([Authentication])
+@permission_classes([SellerPermission])
+def delete_product_rules(request):
+    try:
+        product, seller = check_product_ownership(request)
+        product_rules = ProductRule.objects.filter(product=product)
+        product_rules = [product_rules.get(id=pk) for pk in request.data["product_rules"]]
+        for product_rule in product_rules:
+            product_rule.delete()
+        return Response({"message": "Product-Rules deleted successfully"}, status=200)
+    except Exception as e:
+        return Response({"error":str(e)}, status=400)
+
 @api_view(['GET'])
 @authentication_classes([Authentication])
 def get_categories(request):

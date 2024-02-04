@@ -4,6 +4,7 @@ from .models.attributes import *
 from .models.images import *
 from .models.products import *
 from .models.relations import *
+from .models.rules import *
 
 class CategorySerializer(serializers.ModelSerializer):
 
@@ -35,6 +36,12 @@ class ImageSerializer(serializers.ModelSerializer):
         model = Image
         fields = '__all__'
 
+class RuleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Rule
+        fields = '__all__'
+
 class ProductSerializer(serializers.ModelSerializer):
 
     compliance_score = serializers.DecimalField(read_only=True, max_digits=20, decimal_places=5)
@@ -50,9 +57,15 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_images(self, obj):
         return ImageSerializer(obj.images.all(), many=True).data
-
+    
 class ProductAttributeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductAttribute
+        fields = '__all__'
+
+class ProductRuleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProductRule
         fields = '__all__'
