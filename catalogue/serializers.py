@@ -5,6 +5,7 @@ from .models.images import *
 from .models.products import *
 from .models.relations import *
 from .models.rules import *
+from .models.reviews import *
 
 class CategorySerializer(serializers.ModelSerializer):
 
@@ -57,6 +58,12 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_images(self, obj):
         return ImageSerializer(obj.images.all(), many=True).data
+    
+class ReviewSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Review
+        fields = '__all__'
     
 class ProductAttributeSerializer(serializers.ModelSerializer):
 

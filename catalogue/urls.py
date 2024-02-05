@@ -23,6 +23,12 @@ urlpatterns = [
     path("product_rule/<int:product_id>/<int:pk>/", get_product_rule, name="get-product-rule"),
     path("product_rule/add/", add_product_rules, name="add-product-rules"),
     path("product_rule/delete/", delete_product_rules, name="delete-product-rules"),
+
+    path("review/<int:product_id>/", get_reviews, name="get-reviews"),
+    path("review/<int:product_id>/<int:pk>/", get_review, name="get-review"),
+    path("review/add/", add_review, name="add-review"),
+    path("review/edit/", edit_review, name="edit-review"),
+    path("review/delete/", delete_review, name="delete-review"),
     
     path("category/", get_categories, name="get-categories"),
     path("sub_category/<int:pk>/", get_sub_categories, name="get-sub-categories"),

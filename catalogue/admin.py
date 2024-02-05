@@ -5,6 +5,7 @@ from .models.attributes import *
 from .models.images import *
 from .models.relations import *
 from .models.rules import *
+from .models.reviews import *
 
 # Register your models here.
 admin.site.register(Category)
@@ -16,3 +17,4 @@ admin.site.register(Image)
 admin.site.register(ProductAttribute)
 admin.site.register(Rule)
 admin.site.register(ProductRule)
+admin.site.register(Review)
