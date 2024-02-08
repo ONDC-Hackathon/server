@@ -31,6 +31,7 @@ class RuleFileStorage(FileSystemStorage):
 class Rule(BaseModel):
     description = models.TextField()
     file = models.FileField(upload_to='', storage=RuleFileStorage(), null=True, blank=True)
+    weight = models.DecimalField(max_digits=20, decimal_places=5)
     category = models.ManyToManyField(Category, related_name='rules', blank=True)
     sub_category = models.ManyToManyField(SubCategory, related_name='rules', blank=True)
     variant = models.ManyToManyField(Variant, related_name='rules', blank=True)

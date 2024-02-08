@@ -93,3 +93,15 @@ def get_fssai_license_details(product):
     licenseno = ProductAttribute.objects.filter(product=product).filter(attribute=attribute).first().value
     data = [element for element in MOCK_DATA if element['licenseno'] == licenseno][0]
     return data
+
+def check_color(product):
+    pass
+
+def check_brand(product):
+    pass
+
+def check_country_of_origin(product):
+    pass
+
+def check_image_authenticity(product):
+    pass
