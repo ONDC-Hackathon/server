@@ -15,10 +15,3 @@ class ProductAttribute(BaseModel):
 
     def __str__(self):
         return self.product.title + " - " + self.attribute.title
-    
-class ProductRule(BaseModel):
-    product = models.ForeignKey(Product, related_name='rules_followed', on_delete=models.CASCADE)
-    rule = models.ForeignKey(Rule, related_name='products_following', on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.product.title + " - " + self.rule.description

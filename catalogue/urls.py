@@ -19,11 +19,6 @@ urlpatterns = [
     path("rule/", get_rules, name="get-rules"),
     path("rule/<int:pk>/", get_rule, name="get-rule"),
 
-    path("product_rule/<int:product_id>/", get_product_rules, name="get-product-rules"),
-    path("product_rule/<int:product_id>/<int:pk>/", get_product_rule, name="get-product-rule"),
-    path("product_rule/add/", add_product_rules, name="add-product-rules"),
-    path("product_rule/delete/", delete_product_rules, name="delete-product-rules"),
-
     path("review/<int:product_id>/", get_reviews, name="get-reviews"),
     path("review/<int:product_id>/<int:pk>/", get_review, name="get-review"),
     path("review/add/", add_review, name="add-review"),

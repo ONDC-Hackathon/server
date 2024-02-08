@@ -70,9 +70,3 @@ class ProductAttributeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductAttribute
         fields = '__all__'
-
-class ProductRuleSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = ProductRule
-        fields = '__all__'

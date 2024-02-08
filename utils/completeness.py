@@ -6,7 +6,7 @@ from catalogue.models.relations import ProductAttribute
 ATTRIBUTE_WEIGHT = 0.8
 IMAGE_WEIGHT = 0.2
 
-def calculate_score(product):
+def calculate_completeness_score(product):
     attributes = Attribute.objects.filter(category=product.category)
     attributes.union(attributes, Attribute.objects.filter(sub_category=product.sub_category))
     attributes.union(Attribute.objects.filter(variant=product.variant))
