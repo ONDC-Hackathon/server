@@ -16,6 +16,7 @@ class Product(BaseModel):
     seller = models.ForeignKey(Seller, related_name="product", on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     brand = models.CharField(max_length=255)
+    manufacturer = models.CharField(max_length=255)
     status = models.CharField(max_length=255, choices=STATUS_CHOICES, default='Available')
     available_stock = models.BigIntegerField()
     price = models.DecimalField(max_digits=20, decimal_places=5)
