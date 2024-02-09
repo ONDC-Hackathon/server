@@ -365,10 +365,11 @@ def get_categories(request):
     
 @api_view(['GET'])
 @authentication_classes([Authentication])
-def get_sub_categories(request, pk):
+def get_sub_categories(request):
     try:
-        category = Category.objects.get(id=pk)
-        sub_categories = SubCategory.objects.filter(category=category)
+        sub_categories = SubCategory.objects.all()
+        if "category" in request.GET:
+            sub_categories = sub_categories.filter(category=int(request.GET["category"]))
         serializer = SubCategorySerializer(sub_categories, many=True)
         return Response({"message": "Sub-Categories fetched successfully", "data": serializer.data}, status=200)
     except Exception as e:
@@ -380,10 +381,11 @@ def get_sub_categories(request, pk):
 
 @api_view(['GET'])
 @authentication_classes([Authentication])
-def get_variants(request, pk):
+def get_variants(request):
     try:
-        sub_category = SubCategory.objects.get(id=pk)
-        variants = Variant.objects.filter(sub_category=sub_category)
+        variants = Variant.objects.all()
+        if "sub_category" in request.GET:
+            variants = variants.filter(sub_category=int(request.GET["sub_category"]))
         serializer = VariantSerializer(variants, many=True)
         return Response({"message": "Variants fetched successfully", "data": serializer.data}, status=200)
     except Exception as e:
