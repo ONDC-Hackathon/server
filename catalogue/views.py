@@ -6,6 +6,7 @@ from middleware.permissions import SellerPermission, BuyerPermission
 from copy import deepcopy
 from .serializers import *
 from rest_framework import exceptions
+from rest_framework.pagination import PageNumberPagination
 
 #################################################################################################
 
@@ -35,6 +36,12 @@ def get_products(request):
 
         if "variant" in request.GET:
             products = products.filter(variant=Variant.objects.get(id=request.GET["variant"]))
+
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+        if request.GET.get('page_size') is not None:
+            paginator.page_size = int(request.GET.get('page_size'))
+        products = paginator.paginate_queryset(products, request)
         
         serializer = ProductSerializer(products, many=True)
         return Response({"message": "Products fetched successfully", "data": serializer.data}, status=200)
