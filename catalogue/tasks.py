@@ -6,7 +6,7 @@ from utils.compliance import calculate_compliance_score
 from utils.correctness import calculate_correctness_score
 from utils.imageVerification import extract_text_from_image_file
 from utils.proFanityCheck import analyze_and_flag_negative_sentiment
-from .serializers import ProductLogSerializer
+from catalogue.serializers import ProductLogSerializer
 
 
 def long_running_task(pk):
@@ -54,7 +54,7 @@ def check_on_quality_of_attributes(product):
 
 def text_attribute_quality(prod_id, attributes):
     for attribute in attributes:
-        print("Analyzing attribute: ", attribute.name, attribute.value)
+        print("Analyzing attribute:", attribute.value)
         is_okay = not analyze_and_flag_negative_sentiment(attribute.value)
         product_log_data = {
             'product': prod_id,
@@ -62,7 +62,7 @@ def text_attribute_quality(prod_id, attributes):
             'is_okay': is_okay
         }
         if not is_okay:
-            product_log_data['description'] = f"Attribute {attribute.name} has quality issues"
+            product_log_data['description'] = f"Attribute {attribute.title} has quality issues"
 
         product_log = ProductLogSerializer(data=product_log_data)
         if product_log.is_valid():

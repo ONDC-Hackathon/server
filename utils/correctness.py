@@ -103,30 +103,40 @@ def check_color(product):
     color = product.attributes.all().filter(attribute__title="color").first().value
     print(color)
     if not color:
-        return 0.5  # if color is not mentioned
+        return 0  # if color is not mentioned
     gcp_data_raw = product.attribute_logs.all().filter(
         product=product).first().gcp_data
     gcp_data = json.loads(gcp_data_raw)
-    print(gcp_data['image_properties_annotation'])
+    # print(gcp_data['image_properties_annotation'])
     return find_closest_color_score(color, gcp_data['image_properties_annotation']['dominant_colors'])
 
 
 def check_brand(product):
-    pass
+    product = product.attributes.all().filter(
+        attribute__title="brand").first().value
+    if not product:
+        return 0
+    else:
+        return 1
 
 
 def check_country_of_origin(product):
-    pass
+    if product.attributes.all().filter(attribute__title="country of origin").first().value:
+        return 1
+    else:
+        return 0
 
 
-def check_image_authenticity(product):
-    pass
+def check_revelance_of_subcategory_with_image(product):
+    sub_category = product.sub_category
+    print(sub_category)
+    return 1
 
 
 def calculate_correctness_score(product):
     correctness_score = 0
     correctness_score += check_color(product)
-    # correctness_score += check_brand(product)
-    # correctness_score += check_country_of_origin(product)
-    # correctness_score += check_image_authenticity(product)
-    return correctness_score/1
+    correctness_score += check_brand(product)
+    correctness_score += check_country_of_origin(product)
+    correctness_score += check_revelance_of_subcategory_with_image(product)
+    return correctness_score/4
