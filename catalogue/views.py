@@ -459,7 +459,7 @@ def check_score(request, pk):
         if product.attribute_logs.all().count() == 0:
             return Response({"message": "Score is Being Evaluated"}, status=200)
         elif not all_product_okay:
-            logs = product.attribute_logs.all()
+            logs = product.attribute_logs.all().filter(is_okay=False)
             data = {
                 "message": "Invalid response, please review your responses",
                 "data": {"logs": ProductLogSerializer(logs, many=True).data}

@@ -29,7 +29,6 @@ def overall_similarity_score_between_dict(dict1, dict2):
     # To avoid division by zero if there are no matching keys
     if count == 0:
         return 0
-
     overall_similarity = total_similarity / count
     return overall_similarity
 

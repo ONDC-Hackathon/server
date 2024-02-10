@@ -9,6 +9,11 @@ from utils.proFanityCheck import analyze_and_flag_negative_sentiment
 from catalogue.serializers import ProductLogSerializer
 
 
+COMPLETENESS_WEIGHT = 0.3
+COMPLIANCE_WEIGHT = 0.2
+CORRECTNESS_WEIGHT = 0.5
+
+
 def long_running_task(pk):
     print("Task started")
     product = Product.objects.prefetch_related(
@@ -23,22 +28,28 @@ def long_running_task(pk):
     if not all_product_okay or log_count == 0:
         logs.delete()
         check_on_quality_of_attributes(product)
-
-    if all_product_okay and log_count > 0:
+    completeness_score = 0
+    compliance_score = 0
+    correctness_score = 0
+    catalouge_score = 0
+    try:
         completeness_score = calculate_completeness_score(product)
         compliance_score = calculate_compliance_score(product)
         correctness_score = calculate_correctness_score(product)
-        product.completeness_score = completeness_score
-        product.compliance_score = compliance_score
-        product.correctness_score = correctness_score
-        product.catalogue_score = (
-            completeness_score + compliance_score + correctness_score) / 3
-
-        print(f"Completeness score: {completeness_score}")
-        print(f"Compliance score: {compliance_score}")
-        print(f"Correctness score: {correctness_score}")
-        print(f"Catalogue score: {product.catalogue_score}")
-        product.save()
+        catalouge_score = (completeness_score * COMPLETENESS_WEIGHT + compliance_score *
+                           COMPLIANCE_WEIGHT + correctness_score * CORRECTNESS_WEIGHT)
+    except Exception as e:
+        print(e)
+        print("Error calculating scores")
+    product.completeness_score = completeness_score
+    product.compliance_score = compliance_score
+    product.correctness_score = correctness_score
+    product.catalogue_score = catalouge_score
+    print(f"Completeness score: {completeness_score}")
+    print(f"Compliance score: {compliance_score}")
+    print(f"Correctness score: {correctness_score}")
+    print(f"Catalogue score: {catalouge_score}")
+    product.save()
 
     print("Task completed")
 
@@ -62,7 +73,7 @@ def text_attribute_quality(prod_id, attributes):
             'is_okay': is_okay
         }
         if not is_okay:
-            product_log_data['description'] = f"Attribute {attribute.title} has quality issues"
+            product_log_data['description'] = f"Attribute value "" {attribute.value} "" has quality issues"
 
         product_log = ProductLogSerializer(data=product_log_data)
         if product_log.is_valid():
@@ -75,8 +86,12 @@ def image_attribute_quality(prod_id, images):
         print("Analyzing image: ", image.id)
         try:
             analysis_result = extract_text_from_image_file(image)
-            is_okay = analysis_result["safe_search_annotation"]["adult"] in [
-                1, 2,]  # 1: "Very unlikely", 2: "Unlikely"
+            safe_search = analysis_result["safe_search_annotation"]
+            is_okay = safe_search['adult'] in [1, 2] and safe_search['racy'] in [
+                1, 2]  # 1: "Very unlikely", 2: "Unlikely"
+            for textInImage in analysis_result['text_annotations']:
+                is_okay = is_okay and not analyze_and_flag_negative_sentiment(
+                    textInImage['description'])
             product_log_data = {
                 'product': prod_id,
                 'image': image.id,
@@ -84,7 +99,7 @@ def image_attribute_quality(prod_id, images):
                 'gcp_data': json.dumps(analysis_result)
             }
             if not is_okay:
-                product_log_data['description'] = f"Image {image.id} has quality issues"
+                product_log_data['description'] = f"Image  {image.id}  has quality issues"
             product_log_serializer = ProductLogSerializer(
                 data=product_log_data)
             if product_log_serializer.is_valid():

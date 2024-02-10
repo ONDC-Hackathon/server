@@ -6,8 +6,9 @@ import json
 from bs4 import BeautifulSoup
 import time
 import random
+import re
 from utils.colorScore import find_closest_color_score
-
+from utils.similarityIndex import *
 
 MOCK_DATA = [
     {
@@ -75,68 +76,175 @@ MOCK_DATA = [
 
 
 def get_bis_details_for_electronics(product):
-    attribute = Attribute.objects.get(title="registration number")
-    product_registration_number = ProductAttribute.objects.filter(
-        attribute=attribute).first()
-    if product_registration_number is None:
-        return None
-    else:
-        r_no = product_registration_number.value
-        response = requests.get(
-            f"https://www.manakonline.in/MANAK/BISCRS.do?rno={r_no}")
-        response = response.text.strip("\"").replace("\\", "")
-        response = "[" + response + "]"
-        data = json.loads(response)
-        obj = data[0]
-        return obj
-
-
-def get_fssai_license_details(product):
-    attribute = Attribute.objects.get(title="fssai number")
-    licenseno = ProductAttribute.objects.filter(
-        product=product).filter(attribute=attribute).first().value
-    data = [element for element in MOCK_DATA if element['licenseno'] == licenseno][0]
-    return data
+    try:
+        attribute = Attribute.objects.get(title="registration number")
+        product_registration_number = ProductAttribute.objects.filter(
+            attribute=attribute).first()
+        if product_registration_number is None:
+            return None
+        else:
+            r_no = product_registration_number.value
+            response = requests.get(
+                f"https://www.manakonline.in/MANAK/BISCRS.do?rno={r_no}")
+            response = response.text.strip("\"").replace("\\", "")
+            response = "[" + response + "]"
+            data = json.loads(response)
+            obj = data[0]
+            return obj
+    except Exception as e:
+        print(e)
+        return {}
 
 
 def check_color(product):
-    color = product.attributes.all().filter(attribute__title="color").first().value
-    print(color)
-    if not color:
-        return 0  # if color is not mentioned
-    gcp_data_raw = product.attribute_logs.all().filter(
-        product=product).first().gcp_data
-    gcp_data = json.loads(gcp_data_raw)
-    # print(gcp_data['image_properties_annotation'])
-    return find_closest_color_score(color, gcp_data['image_properties_annotation']['dominant_colors'])
+    try:
+        color = product.attributes.all().filter(attribute__title="color").first().value
+        print(color)
+        if not color:
+            return 0  # if color is not mentioned
+        allData = product.attribute_logs.all().filter(image__isnull=False)
+        cnt = 0
+        score = 0
+        for data in allData:
+            gcp_data_raw = data.gcp_data
+            gcp_data = json.loads(gcp_data_raw)
+            score += find_closest_color_score(
+                color, gcp_data['image_properties_annotation']['dominant_colors'])
+            cnt += 1
+
+        if (cnt == 0):
+            return 0
+        return score/cnt
+    except Exception as e:
+        print(e)
+        return 0
 
 
 def check_brand(product):
-    product = product.attributes.all().filter(
-        attribute__title="brand").first().value
-    if not product:
+    try:
+        product = product.attributes.all().filter(
+            attribute__title="brand").first().value
+        if not product:
+            return 0
+        else:
+            return 1
+    except Exception as e:
+        print(e)
         return 0
-    else:
-        return 1
 
 
 def check_country_of_origin(product):
-    if product.attributes.all().filter(attribute__title="country of origin").first().value:
-        return 1
-    else:
+    try:
+        if product.attributes.all().filter(attribute__title="country of origin").first().value:
+            return 1
+        else:
+            return 0
+    except Exception as e:
+        print(e)
         return 0
 
 
 def check_revelance_of_subcategory_with_image(product):
-    sub_category = product.sub_category
-    print(sub_category)
-    return 1
+    try:
+        sub_category = product.sub_category.title
+        allData = product.attribute_logs.all().filter(image__isnull=False)
+        cnt = 0
+        score = 0
+        pattern = re.escape(sub_category).replace(r'\ ', '[- ]?')
+        # from web entities
+        for data in allData:
+            gcp_data_raw = data.gcp_data
+            gcp_data = json.loads(gcp_data_raw)
+            web_entities = gcp_data['web_detection']['web_entities']
+            for x in web_entities:
+                print(x['description'])
+                if re.search(pattern, x['description'], re.IGNORECASE):
+                    score += x['score']
+                    cnt += 1.0
+        # from labels
+        for data in allData:
+            gcp_data_raw = data.gcp_data
+            gcp_data = json.loads(gcp_data_raw)
+            labels = gcp_data['label_annotations']
+            for x in labels:
+                if re.search(pattern, x['description'], re.IGNORECASE):
+                    score += x['score']
+                    cnt += 1.0
+
+        if (cnt == 0):
+            return 0
+        print("score", score, "cnt", cnt)
+        return min((score/cnt), 1)
+    except Exception as e:
+        print("Error in check_revelance_of_subcategory_with_image", e)
+        return 0
+
+
+def check_registration_number(product):
+    try:
+        if product.category.title == "Electronics":
+            bis_data = get_bis_details_for_electronics(product)
+            # obj = {
+            #     "title": product.title,
+            #     "brand": product.brand,
+            #     "manufacturer": product.manufacturer,
+            #     "about": product.about,
+            # }
+            str1 = f"{product.title} {product.brand} {product.manufacturer} {product.about}"
+            str2 = ""
+            for data in bis_data.values():
+                str2 += f" {data}"
+            score = overall_similarity_score_between_text(str1, str2)
+
+            return max(0.33, score)
+        elif product.category.title == "Food":
+            obj = {
+                "title": product.title,
+                "brand": product.brand,
+                "manufacturer": product.manufacturer,
+                "about": product.about,
+            }
+            str1 = f"{product.title} {product.brand} {product.manufacturer} {product.about}"
+            str2 = ""
+            for data in random.choice(MOCK_DATA).values():
+                str2 = f"{ data}"
+            score = overall_similarity_score_between_text(str1, str2)
+            return score
+    except Exception as e:
+        print(e)
+        print("Error in check_registration_number")
+        return 0
+
+
+COLOR_SCORE_WEIGHT = 0.1
+BRAND_SCORE_WEIGHT = 0.05
+COUNTRY_OF_ORIGIN_SCORE_WEIGHT = 0.05
+SUBCATEGORY_SCORE_WEIGHT = 0.5
+REGISTRATION_SCORE_WEIGHT = 0.3
 
 
 def calculate_correctness_score(product):
-    correctness_score = 0
-    correctness_score += check_color(product)
-    correctness_score += check_brand(product)
-    correctness_score += check_country_of_origin(product)
-    correctness_score += check_revelance_of_subcategory_with_image(product)
-    return correctness_score/4
+    try:
+        correctness_score = 0
+
+        color_score = check_color(product)
+        brand_score = check_brand(product)
+        country_of_origin_score = check_country_of_origin(product)
+        subcategory_score = check_revelance_of_subcategory_with_image(product)
+        registration_score = check_registration_number(product)
+        print(f"Color score: {color_score}")
+        print(f"Brand score: {brand_score}")
+        print(f"Country of origin score: {country_of_origin_score}")
+        print(f"Subcategory score: {subcategory_score}")
+        print(f"Registration score: {registration_score}")
+
+        correctness_score += color_score*COLOR_SCORE_WEIGHT
+        correctness_score += brand_score*BRAND_SCORE_WEIGHT
+        correctness_score += country_of_origin_score*COUNTRY_OF_ORIGIN_SCORE_WEIGHT
+        correctness_score += subcategory_score*SUBCATEGORY_SCORE_WEIGHT
+        correctness_score += registration_score*REGISTRATION_SCORE_WEIGHT
+
+        return correctness_score
+    except Exception as e:
+        print(e)
+        return 0
