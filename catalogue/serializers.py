@@ -7,11 +7,13 @@ from .models.relations import *
 from .models.rules import *
 from .models.reviews import *
 
+
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
         fields = '__all__'
+
 
 class SubCategorySerializer(serializers.ModelSerializer):
 
@@ -19,11 +21,13 @@ class SubCategorySerializer(serializers.ModelSerializer):
         model = SubCategory
         fields = '__all__'
 
+
 class VariantSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Variant
         fields = '__all__'
+
 
 class AttributeSerializer(serializers.ModelSerializer):
 
@@ -31,11 +35,13 @@ class AttributeSerializer(serializers.ModelSerializer):
         model = Attribute
         fields = '__all__'
 
+
 class ImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Image
         fields = '__all__'
+
 
 class RuleSerializer(serializers.ModelSerializer):
 
@@ -43,14 +49,19 @@ class RuleSerializer(serializers.ModelSerializer):
         model = Rule
         fields = '__all__'
 
+
 class ProductSerializer(serializers.ModelSerializer):
 
-    compliance_score = serializers.DecimalField(read_only=True, max_digits=20, decimal_places=5)
-    completeness_score = serializers.DecimalField(read_only=True, max_digits=20, decimal_places=5)
-    correctness_score = serializers.DecimalField(read_only=True, max_digits=20, decimal_places=5)
-    catalogue_score = serializers.DecimalField(read_only=True, max_digits=20, decimal_places=5)
+    compliance_score = serializers.DecimalField(
+        read_only=True, max_digits=20, decimal_places=5)
+    completeness_score = serializers.DecimalField(
+        read_only=True, max_digits=20, decimal_places=5)
+    correctness_score = serializers.DecimalField(
+        read_only=True, max_digits=20, decimal_places=5)
+    catalogue_score = serializers.DecimalField(
+        read_only=True, max_digits=20, decimal_places=5)
+    scoring_status = serializers.CharField(read_only=True, max_length=20)
     images = serializers.SerializerMethodField(read_only=True)
-    
 
     class Meta:
         model = Product
@@ -58,21 +69,21 @@ class ProductSerializer(serializers.ModelSerializer):
 
     def get_images(self, obj):
         return ImageSerializer(obj.images.all(), many=True).data
-    
+
+
 class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
         fields = '__all__'
-    
+
+
 class ProductAttributeSerializer(serializers.ModelSerializer):
+    title = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = ProductAttribute
         fields = '__all__'
 
-class ProductLogSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model = ProductLog
-        fields = '__all__'
+    def get_title(self, obj):
+        return obj.attribute.title

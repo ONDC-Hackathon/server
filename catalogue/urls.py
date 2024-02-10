@@ -29,7 +29,7 @@ urlpatterns = [
     path("review/delete/", delete_review, name="delete-review"),
     
     path("category/", get_categories, name="get-categories"),
-    path("sub_category/<int:pk>/", get_sub_categories, name="get-sub-categories"),
-    path("variant/<int:pk>/", get_variants, name="get-variants"),
+    path("sub_category/", get_sub_categories, name="get-sub-categories"),
+    path("variant/", get_variants, name="get-variants"),
     path("attribute/", get_attributes, name="get-attributes"),
 ]
