@@ -183,12 +183,10 @@ def delete_product_image(request):
 @authentication_classes([Authentication])
 def get_attributes(request):
     try:
-        attributes = Attribute.objects.all()
-        if "category" in request.GET:
-            attributes = attributes.filter(category=request.GET["category"])
+        attributes = Attribute.objects.filter(category=request.GET["category"])
         if "sub_category" in request.GET:
-            attributes = attributes.filter(
-                sub_category=request.GET["sub_category"])
+            attributes = attributes.union(attributes, Attribute.objects.filter(
+                sub_category=request.GET["sub_category"]))
         if "variant" in request.GET:
             attributes = attributes.union(attributes, Attribute.objects.filter(
                 variant=int(request.GET["variant"])))
@@ -439,8 +437,19 @@ def get_variants(request):
 
 @api_view(['GET'])
 @authentication_classes([Authentication])
+# @permission_classes([SellerPermission])
 def evaluate_score(request, pk):
     try:
+        product = Product.objects.filter(id=pk).first()
+        if product is None:
+            raise exceptions.NotFound("Product not found")
+        if product.scoring_status == 'Processing':
+            return Response({"message": "Product is under review"}, status=200)
+        # seller = Seller.objects.get(user=request.user.id)
+        # if product.seller.id != seller.id:
+        #     raise exceptions.PermissionDenied("Not Allowed")
+        product.scoring_status = 'Processing'
+        product.save()
         start_background_task(pk)
         return Response({"message": "Score is Being Evaluated"}, status=200)
     except Exception as e:
@@ -449,17 +458,21 @@ def evaluate_score(request, pk):
 
 @api_view(['GET'])
 @authentication_classes([Authentication])
+# @permission_classes([SellerPermission])
 def check_score(request, pk):
     try:
         product = Product.objects.get(id=pk)
         if not product:
             return Response({"error": "Product not found"}, status=404)
+        # seller = Seller.objects.get(user=request.user.id)
+        # if product.seller.id != seller.id:
+        #     raise exceptions.PermissionDenied("Not Allowed")
         all_product_okay = all(
             [log.is_okay for log in product.attribute_logs.all()])
         if product.attribute_logs.all().count() == 0:
             return Response({"message": "Score is Being Evaluated"}, status=200)
         elif not all_product_okay:
-            logs = product.attribute_logs.all().filter(is_okay=False)
+            logs = product.attribute_logs.filter(is_okay=False)
             data = {
                 "message": "Invalid response, please review your responses",
                 "data": {"logs": ProductLogSerializer(logs, many=True).data}
