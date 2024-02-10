@@ -443,9 +443,13 @@ def evaluate_score(request, pk):
         product = Product.objects.filter(id=pk).first()
         if product is None:
             raise exceptions.NotFound("Product not found")
+        if product.scoring_status == 'Processing':
+            return Response({"message": "Product is under review"}, status=200)
         # seller = Seller.objects.get(user=request.user.id)
         # if product.seller.id != seller.id:
         #     raise exceptions.PermissionDenied("Not Allowed")
+        product.scoring_status = 'Processing'
+        product.save()
         start_background_task(pk)
         return Response({"message": "Score is Being Evaluated"}, status=200)
     except Exception as e:
@@ -468,7 +472,7 @@ def check_score(request, pk):
         if product.attribute_logs.all().count() == 0:
             return Response({"message": "Score is Being Evaluated"}, status=200)
         elif not all_product_okay:
-            logs = product.attribute_logs.all()
+            logs = product.attribute_logs.filter(is_okay=False)
             data = {
                 "message": "Invalid response, please review your responses",
                 "data": {"logs": ProductLogSerializer(logs, many=True).data}
