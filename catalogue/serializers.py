@@ -87,3 +87,10 @@ class ProductAttributeSerializer(serializers.ModelSerializer):
 
     def get_title(self, obj):
         return obj.attribute.title
+
+
+class ProductLogSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProductLog
+        fields = '__all__'
