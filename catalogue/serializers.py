@@ -49,6 +49,7 @@ class ProductSerializer(serializers.ModelSerializer):
     completeness_score = serializers.DecimalField(read_only=True, max_digits=20, decimal_places=5)
     correctness_score = serializers.DecimalField(read_only=True, max_digits=20, decimal_places=5)
     catalogue_score = serializers.DecimalField(read_only=True, max_digits=20, decimal_places=5)
+    scoring_status = serializers.CharField(read_only=True, max_length=20)
     images = serializers.SerializerMethodField(read_only=True)
     
 
