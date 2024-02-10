@@ -36,7 +36,7 @@ def check_product_ownership(request):
 @authentication_classes([Authentication])
 def get_products(request):
     try:
-        products = Product.objects.all()
+        products = Product.objects.filter(seller=Seller.objects.get(user=request.user.id))
         if "category" in request.GET:
             products = products.filter(
                 category=Category.objects.get(id=request.GET["category"]))
@@ -464,21 +464,8 @@ def check_score(request, pk):
         product = Product.objects.get(id=pk)
         if not product:
             return Response({"error": "Product not found"}, status=404)
-        # seller = Seller.objects.get(user=request.user.id)
-        # if product.seller.id != seller.id:
-        #     raise exceptions.PermissionDenied("Not Allowed")
-        all_product_okay = all(
-            [log.is_okay for log in product.attribute_logs.all()])
-        if product.attribute_logs.all().count() == 0:
-            return Response({"message": "Score is Being Evaluated"}, status=200)
-        elif not all_product_okay:
-            logs = product.attribute_logs.filter(is_okay=False)
-            data = {
-                "message": "Invalid response, please review your responses",
-                "data": {"logs": ProductLogSerializer(logs, many=True).data}
-            }
-            return Response(data, status=200)
-        else:
-            return Response({"message": "Application Approved", "data": {"catalogue_score": product.catalogue_score}}, status=200)
+        logs = product.attribute_logs.filter(is_okay=False)
+        serializer = ProductLogSerializer(logs, many=True)
+        return Response({"message": "Logs Fetched Sucessfully", "logs": serializer.data}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
