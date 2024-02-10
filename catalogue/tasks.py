@@ -33,7 +33,7 @@ def long_running_task(pk):
         product.correctness_score = correctness_score
         product.catalogue_score = (
             completeness_score + compliance_score + correctness_score) / 3
-
+        product.scoring_status = 'Completed'
         print(f"Completeness score: {completeness_score}")
         print(f"Compliance score: {compliance_score}")
         print(f"Correctness score: {correctness_score}")
