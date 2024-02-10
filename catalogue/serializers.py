@@ -67,7 +67,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = '__all__'
     
 class ProductAttributeSerializer(serializers.ModelSerializer):
+    title = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = ProductAttribute
         fields = '__all__'
+    
+    def get_title(self, obj):
+        return obj.attribute.title
