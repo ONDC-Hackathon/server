@@ -3,7 +3,7 @@ from copy import deepcopy
 
 from rest_framework import exceptions
 from rest_framework.decorators import (api_view, authentication_classes,
-                                       permission_classes), parser_classes
+                                       permission_classes, parser_classes)
 from rest_framework.response import Response
 
 from middleware.auth import Authentication
