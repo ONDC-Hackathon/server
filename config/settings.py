@@ -27,6 +27,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+#googleCloudSetup
+import os
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=f"{BASE_DIR}/gcp-cred.json"
 
 # Application definition
 

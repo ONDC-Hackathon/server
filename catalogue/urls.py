@@ -15,6 +15,9 @@ urlpatterns = [
     path("product_attribute/add/", add_product_attributes, name="add-product-attributes"),
     path("product_attribute/edit/", edit_product_attributes, name="edit-product-attributes"),
     path("product_attribute/delete/", delete_product_attributes, name="delete-product-attributes"),
+    
+    path("evaluate_score/<int:pk>/", evaluate_score, name="evaluate-score"),
+    path("check_score/<int:pk>/", check_score, name="check-score"),
 
     path("rule/", get_rules, name="get-rules"),
     path("rule/<int:pk>/", get_rule, name="get-rule"),

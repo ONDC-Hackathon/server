@@ -15,3 +15,14 @@ class ProductAttribute(BaseModel):
 
     def __str__(self):
         return self.product.title + " - " + self.attribute.title
+
+class ProductLog(BaseModel):
+    product = models.ForeignKey(Product, related_name='attribute_logs', on_delete=models.CASCADE)
+    attribute = models.ForeignKey(ProductAttribute, related_name='attribute_logs', on_delete=models.CASCADE,null=True, blank=True)
+    image=models.ForeignKey(Image, related_name='attribute_logs', on_delete=models.CASCADE,null=True, blank=True)
+    is_okay = models.BooleanField(default=False)
+    description=models.TextField(null=True, blank=True)
+    gcp_data=models.JSONField(null=True, blank=True)
+
+    def __str__(self):
+        return self.product.title

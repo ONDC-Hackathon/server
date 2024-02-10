@@ -1,26 +1,33 @@
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework.response import Response
-from users.serializers import *
-from middleware.auth import Authentication
-from middleware.permissions import SellerPermission, BuyerPermission
+from catalogue.tasks import *
 from copy import deepcopy
-from .serializers import *
+
 from rest_framework import exceptions
+from rest_framework.decorators import (api_view, authentication_classes,
+                                       permission_classes)
+from rest_framework.response import Response
+
+from middleware.auth import Authentication
+from middleware.permissions import BuyerPermission, SellerPermission
+from users.serializers import *
+
+from .serializers import *
 
 #################################################################################################
 
 # Product APIs
 
+
 def check_product_ownership(request):
     product = Product.objects.filter(id=request.data['product_id']).first()
     if product is None:
         raise exceptions.NotFound("Product not found")
-    
+
     seller = Seller.objects.get(user=request.user.id)
     if product.seller.id != seller.id:
         raise exceptions.PermissionDenied("Not Allowed")
-    
+
     return product, seller
+
 
 @api_view(['GET'])
 @authentication_classes([Authentication])
@@ -28,20 +35,24 @@ def get_products(request):
     try:
         products = Product.objects.all()
         if "category" in request.GET:
-            products = products.filter(category=Category.objects.get(id=request.GET["category"]))
-        
+            products = products.filter(
+                category=Category.objects.get(id=request.GET["category"]))
+
         if "sub_category" in request.GET:
-            products = products.filter(sub_category=SubCategory.objects.get(id=request.GET["sub_category"]))
+            products = products.filter(
+                sub_category=SubCategory.objects.get(id=request.GET["sub_category"]))
 
         if "variant" in request.GET:
-            products = products.filter(variant=Variant.objects.get(id=request.GET["variant"]))
-        
+            products = products.filter(
+                variant=Variant.objects.get(id=request.GET["variant"]))
+
         serializer = ProductSerializer(products, many=True)
         return Response({"message": "Products fetched successfully", "data": serializer.data}, status=200)
-    
+
     except Exception as e:
         return Response({"error": str(e)}, status=400)
-    
+
+
 @api_view(['GET'])
 @authentication_classes([Authentication])
 def get_product(request, pk):
@@ -53,9 +64,10 @@ def get_product(request, pk):
         details = ProductAttributeSerializer(attributes, many=True)
 
         return Response({"message": "Products fetched successfully", "data": {"basics": basics.data, "details": details.data}}, status=200)
-    
+
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
 
 @api_view(['POST'])
 @authentication_classes([Authentication])
@@ -73,7 +85,8 @@ def add_product(request):
             return Response({"error": serializer.errors}, status=400)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
-    
+
+
 @api_view(['PUT'])
 @authentication_classes([Authentication])
 @permission_classes([SellerPermission])
@@ -93,7 +106,8 @@ def edit_product(request):
             return Response({"error": serializer.errors}, status=400)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
- 
+
+
 @api_view(['DELETE'])
 @authentication_classes([Authentication])
 @permission_classes([SellerPermission])
@@ -106,7 +120,7 @@ def delete_product(request):
         return Response({"message": "Product deleted successfully"}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
-        
+
 
 #################################################################################################
 
@@ -125,12 +139,13 @@ def add_product_image(request):
             image = serializer.save()
             product.images.add(image)
             product.save()
-            return Response({"message":"Image uploaded successfully", "data": serializer.data}, status=200)
+            return Response({"message": "Image uploaded successfully", "data": serializer.data}, status=200)
         else:
             return Response({"error": serializer.errors}, status=400)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
-    
+
+
 @api_view(['DELETE'])
 @authentication_classes([Authentication])
 @permission_classes([SellerPermission])
@@ -139,9 +154,9 @@ def delete_product_image(request):
         product, seller = check_product_ownership(request)
         image = Image.objects.get(id=request.data["image_id"])
         if image not in product.images.all():
-            return Response({"error":"Not Allowed"}, status=403)
+            return Response({"error": "Not Allowed"}, status=403)
         image.delete()
-        return Response({"message":"Image deleted successfully"}, status=200)
+        return Response({"message": "Image deleted successfully"}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
@@ -149,7 +164,7 @@ def delete_product_image(request):
 #################################################################################################
 
 # Attribute APIs
-    
+
 @api_view(['GET'])
 @authentication_classes([Authentication])
 def get_attributes(request):
@@ -158,7 +173,8 @@ def get_attributes(request):
         if "category" in request.GET:
             attributes = attributes.filter(category=request.GET["category"])
         if "sub_category" in request.GET:
-            attributes = attributes.filter(sub_category=request.GET["sub_category"])
+            attributes = attributes.filter(
+                sub_category=request.GET["sub_category"])
         if "variant" in request.GET:
             attributes = attributes.filter(variant=request.GET["variant"])
 
@@ -166,7 +182,8 @@ def get_attributes(request):
         return Response({"message": "Variants fetched successfully", "data": serializer.data}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
-    
+
+
 @api_view(['POST'])
 @authentication_classes([Authentication])
 @permission_classes([SellerPermission])
@@ -174,7 +191,8 @@ def add_product_attributes(request):
     try:
         product, seller = check_product_ownership(request)
 
-        attributes = [ {"attribute": attr, "value": request.data["attributes"][attr], "product": product.id} for attr in request.data["attributes"]]
+        attributes = [{"attribute": attr, "value": request.data["attributes"]
+                       [attr], "product": product.id} for attr in request.data["attributes"]]
 
         serializer = ProductAttributeSerializer(data=attributes, many=True)
         if serializer.is_valid():
@@ -182,10 +200,11 @@ def add_product_attributes(request):
             return Response({"message": "Product attributes were added successfully", "data": serializer.data}, status=200)
         else:
             return Response({"error": serializer.errors}, status=400)
-        
+
     except Exception as e:
         return Response({"error": str(e)}, status=400)
-    
+
+
 @api_view(['PUT'])
 @authentication_classes([Authentication])
 @permission_classes([SellerPermission])
@@ -193,7 +212,8 @@ def edit_product_attributes(request):
     try:
         product, seller = check_product_ownership(request)
 
-        attributes = [ProductAttribute.objects.get(id=attr) for attr in request.data['attributes']]
+        attributes = [ProductAttribute.objects.get(
+            id=attr) for attr in request.data['attributes']]
 
         for attribute in attributes:
             if attribute.product != product:
@@ -207,7 +227,8 @@ def edit_product_attributes(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=400)
-    
+
+
 @api_view(['DELETE'])
 @authentication_classes([Authentication])
 @permission_classes([SellerPermission])
@@ -215,7 +236,8 @@ def delete_product_attributes(request):
     try:
         product, seller = check_product_ownership(request)
 
-        attributes = [ProductAttribute.objects.get(id=attr) for attr in request.data["attributes"]]
+        attributes = [ProductAttribute.objects.get(
+            id=attr) for attr in request.data["attributes"]]
 
         for attribute in attributes:
             if attribute.product != product:
@@ -233,7 +255,7 @@ def delete_product_attributes(request):
 #################################################################################################
 
 # Rules APIs
-    
+
 
 @api_view(['GET'])
 @authentication_classes([Authentication])
@@ -244,14 +266,16 @@ def get_rules(request):
         if "category" in request.GET:
             rules = Rule.objects.filter(category=request.GET["category"])
         if "sub_category" in request.GET:
-            rules = Rule.objects.filter(sub_category=request.GET["sub_category"])
+            rules = Rule.objects.filter(
+                sub_category=request.GET["sub_category"])
         if "variant" in request.GET:
             rules = Rule.objects.filter(variant=request.GET["variant"])
         serializer = RuleSerializer(rules, many=True)
         return Response({"message": "Rules fetched successfully", "data": serializer.data}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
-    
+
+
 @api_view(['GET'])
 @authentication_classes([Authentication])
 @permission_classes([SellerPermission])
@@ -277,8 +301,9 @@ def get_reviews(request, product_id):
         serializer = ReviewSerializer(reviews, many=True)
         return Response({"message": "Reviews fetched successfully", "data": serializer.data}, status=200)
     except Exception as e:
-        return Response({"error":str(e)}, status=400)
-    
+        return Response({"error": str(e)}, status=400)
+
+
 @api_view(['GET'])
 @authentication_classes([Authentication])
 def get_review(request, product_id, pk):
@@ -288,7 +313,8 @@ def get_review(request, product_id, pk):
         serializer = ReviewSerializer(reviews)
         return Response({"message": "Reviews fetched successfully", "data": serializer.data}, status=200)
     except Exception as e:
-        return Response({"error":str(e)}, status=400)
+        return Response({"error": str(e)}, status=400)
+
 
 @api_view(['POST'])
 @authentication_classes([Authentication])
@@ -303,10 +329,11 @@ def add_review(request):
             serializer.save()
             return Response({"message": "Review added successfully", "data": serializer.data}, status=200)
         else:
-            return Response({"error":serializer.errors}, status=400)
+            return Response({"error": serializer.errors}, status=400)
     except Exception as e:
-        return Response({"error":str(e)}, status=400)
-    
+        return Response({"error": str(e)}, status=400)
+
+
 @api_view(['PUT'])
 @authentication_classes([Authentication])
 @permission_classes([BuyerPermission])
@@ -323,10 +350,11 @@ def edit_review(request):
             serializer.save()
             return Response({"message": "Review added successfully", "data": serializer.data}, status=200)
         else:
-            return Response({"error":serializer.errors}, status=400)
+            return Response({"error": serializer.errors}, status=400)
     except Exception as e:
-        return Response({"error":str(e)}, status=400)
-    
+        return Response({"error": str(e)}, status=400)
+
+
 @api_view(['DELETE'])
 @authentication_classes([Authentication])
 @permission_classes([BuyerPermission])
@@ -338,7 +366,7 @@ def delete_review(request):
         review.delete()
         return Response({"message": "Review deleted successfully"}, status=200)
     except Exception as e:
-        return Response({"error":str(e)}, status=400)
+        return Response({"error": str(e)}, status=400)
 
 
 #################################################################################################
@@ -355,7 +383,8 @@ def get_categories(request):
         return Response({"message": "Categories fetched successfully", "data": serializer.data}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
-    
+
+
 @api_view(['GET'])
 @authentication_classes([Authentication])
 def get_sub_categories(request, pk):
@@ -366,10 +395,11 @@ def get_sub_categories(request, pk):
         return Response({"message": "Sub-Categories fetched successfully", "data": serializer.data}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
-    
+
 #################################################################################################
 
 # Variant APIs
+
 
 @api_view(['GET'])
 @authentication_classes([Authentication])
@@ -379,5 +409,44 @@ def get_variants(request, pk):
         variants = Variant.objects.filter(sub_category=sub_category)
         serializer = VariantSerializer(variants, many=True)
         return Response({"message": "Variants fetched successfully", "data": serializer.data}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+##################################################################################################
+
+
+# Evaluate Score
+
+
+@api_view(['GET'])
+@authentication_classes([Authentication])
+def evaluate_score(request, pk):
+    try:
+        start_background_task(pk)
+        return Response({"message": "Score is Being Evaluated"}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
+
+
+@api_view(['GET'])
+@authentication_classes([Authentication])
+def check_score(request, pk):
+    try:
+        product = Product.objects.get(id=pk)
+        if not product:
+            return Response({"error": "Product not found"}, status=404)
+        all_product_okay = all(
+            [log.is_okay for log in product.attribute_logs.all()])
+        if product.attribute_logs.all().count() == 0:
+            return Response({"message": "Score is Being Evaluated"}, status=200)
+        elif not all_product_okay:
+            logs = product.attribute_logs.all()
+            data = {
+                "message": "Invalid response, please review your responses",
+                "data": {"logs": ProductLogSerializer(logs, many=True).data}
+            }
+            return Response(data, status=200)
+        else:
+            return Response({"message": "Application Approved", "data": {"catalogue_score": product.catalogue_score}}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=400)

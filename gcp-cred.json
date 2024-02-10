@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "data-buckeye-412813",
+  "private_key_id": "1cc64c99cc8945a49ccf4ac37938bc1bdfe67c6b",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDhnf2jn6lRRPPQ\nt9Z4HH2aH1HMDZV5kcyMOwneDSRo3p+c68bXziCwWxyWOa3jteWmxlZ0Un/chAcD\nHHmKCRysPe3noEq6lelBiNhrZcFDAczIvnK8m8/CDNgMVwYUAVn7ZrTaColoidD7\n31zkX01gTF9L8P3IrZXnZyBZzfvN5Xw3eG8HULyC9l95hbb+4jpoJ7xOHWfyE4sj\nP/9HpjuaAppLG/esF84aPDzaGM7p+bpDR5DkI2VNNq3JLVk329UWxR9WIWN09bAP\n1lnvlyVRbBulyjwykAt0p4TQSh0jfcXbvG7YnJ7m6okDKGSWs7iQHgOLIm1HPxan\nDLS/gNHRAgMBAAECggEAPcMGvoaEDsPN7MqOkvXVql29ghsL2qo/cPnucxNs7qpW\nzlm65rO+PhjLBBLJF+dg9R0haJl2+BJKax8d5FwnNb2ERV6bZmWIY5DHEetakvHI\nsgF0nk4W+xuR/xrJhqtyCwCsLG4q/GuRwol8P+YY4+40PjE7//YI7b5M3FingE64\nz+mLR5j99ZIR6tWm6el9AtcRB0o0MyLIp/ev4K45mNj7PSTYkk5OdTHqONy0wmWK\nRjLhYqfBZ6eRcpmxtNuw6NeT4dtLeNI58oa14+JCx+W/DW0HyyO7AzknCzZRh1H7\n1VDHvrszS42kriTiqp5fnQ/Ol+JQHtd5PaztRJQhqwKBgQD7xVuo2HkSEYNM2iLM\n7MDtDJQTvLhv1OhUVHAAALoFcspD1xdeqLu1wRYcTVoFW0UehMN9wTV6pD/Zg6l3\nkshNIZNnOcr//wMoHjb0mKGcvtie66P889N5fcTqARSoGnOM2kNsdH5XfN3umG6i\n4KmI/ga+xnwAkxOKLCptKIw4QwKBgQDlaCsu+bE1f1rHfuE1jD+5wfG9ChiK4H0L\nfVJ+MrHCmUC2bWVQBBFc0BCROVz0ZIct6MeW1ADbv/IGrP6oc844iKz5mAd1t32y\nUgDDpQ2nTntxqnkp0TCtk4oRBNtHP/+RgeNxoMG/rE2KM+in3oHYenZAKAt8zfmX\nJsGeKXfGWwKBgCV1xOCHbOQiVO3fWuQwqbfbckDJiIujGvpJIezuLr9Wx/92BlUg\nN+WgGAEYBTfcz5jt2gRg9esMey+K5nETFthbEYp/T9PtBnQ2oqib+RfQUXy7xMeD\nI8jkzKKgjIlCfkTLyNJfNtkfjAnPBk8XrEHkwe4qrBKNz490aM+bA9nvAoGAUhzh\nKCVT2tRFCBdQQTx8Kt9SydltQ3hrCcvH1UgL/J2iXin2E5gBJvmKlJC1xvycrkAe\nAMzNqdqgpOcTF/Sroey6DXTvZqFRKpzTjTPtGS+sW9krGV65T8f5qXHVk0FDFzAo\n2ykxcIwaDRfbdQrd60CaRwiOZBPN/N5we05YgvUCgYAHkD38QqlMjQ51N8Ok6H0M\ntiMSNJmQbTCT381PSQ6gqCmR8FIqniWoWSnD765Nxv1vMaQQEf85L1aelT4m1LEd\nLrFefuUVIN9VhhuERYkjpDtxy/JX3stLD3+bGVG417ozDzPHK7bPN7pXLcyDIHDT\nh+xe7PBOW+qyWAI+TLQEYg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "buildforbharat@data-buckeye-412813.iam.gserviceaccount.com",
+  "client_id": "103714583534801587221",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/buildforbharat%40data-buckeye-412813.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

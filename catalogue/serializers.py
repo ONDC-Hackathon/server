@@ -70,3 +70,9 @@ class ProductAttributeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductAttribute
         fields = '__all__'
+
+class ProductLogSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = ProductLog
+        fields = '__all__'
