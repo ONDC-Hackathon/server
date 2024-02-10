@@ -1,0 +1,11 @@
+runtime: python39  # or the appropriate version you're using
+entrypoint: gunicorn -b :$PORT config.wsgi
+
+env_variables:
+  DJANGO_SETTINGS_MODULE: "config.settings"
+
+handlers:
+- url: /static
+  static_dir: staticfiles
+- url: /media
+  static_dir: media/

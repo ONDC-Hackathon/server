@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -27,9 +28,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-#googleCloudSetup
-import os
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=f"{BASE_DIR}/gcp-cred.json"
+# googleCloudSetup
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = f"{BASE_DIR}/gcp-cred.json"
 
 # Application definition
 
@@ -40,10 +40,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'storages',
     'rest_framework',
     'corsheaders',
     'users',
     'catalogue',
+
 ]
 
 MIDDLEWARE = [
@@ -85,10 +87,15 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# settings.py
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'latestuser',
+        'PASSWORD': "postgres",
+        'HOST': '34.93.37.153',
+        'PORT': '5432',
     }
 }
 
@@ -124,17 +131,21 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
-STATIC_URL = 'static/'
-
-MEDIA_URL = '/media/'
-
-# Path where media is stored'
-MEDIA_ROOT = BASE_DIR / 'media'
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Google Cloud Storage settings
+GS_BUCKET_NAME = 'data-buckeye-412813.appspot.com'
+STATICFILES_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+GS_STATIC_BUCKET_NAME = GS_BUCKET_NAME
+DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+GS_MEDIA_BUCKET_NAME = GS_BUCKET_NAME
+GS_PROJECT_ID = 'data-buckeye-412813 '
+
+
+# Static and media files settings
+STATIC_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/static/'
+MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/media/'
