@@ -1,4 +1,4 @@
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes, parser_classes
 from rest_framework.response import Response
 from users.serializers import *
 from middleware.auth import Authentication
@@ -7,6 +7,7 @@ from copy import deepcopy
 from .serializers import *
 from rest_framework import exceptions
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.parsers import MultiPartParser, FormParser
 
 #################################################################################################
 
@@ -122,15 +123,26 @@ def delete_product(request):
 @api_view(['POST'])
 @authentication_classes([Authentication])
 @permission_classes([SellerPermission])
+@parser_classes([FormParser, MultiPartParser])
 def add_product_image(request):
     try:
-        product, seller = check_product_ownership(request)
+        data = deepcopy(request.data.dict())
+        images_array = []
+        for key in data.keys():
+            if key.startswith('images'):
+                image_index = int(key.split('[')[1].split(']')[0])
+                attribute = key.split('[')[-1].split(']')[0]
+                if len(images_array) > image_index:
+                    images_array[image_index][attribute] = data[key]
+                else:
+                    images_array.append({attribute: data[key]})
 
-        serializer = ImageSerializer(data=request.data)
+        product, seller = check_product_ownership(request)
+        serializer = ImageSerializer(data=images_array, many=True)
 
         if serializer.is_valid():
-            image = serializer.save()
-            product.images.add(image)
+            images = serializer.save()
+            product.images.add(*images)
             product.save()
             return Response({"message":"Image uploaded successfully", "data": serializer.data}, status=200)
         else:
@@ -160,17 +172,14 @@ def delete_product_image(request):
 @api_view(['GET'])
 @authentication_classes([Authentication])
 def get_attributes(request):
-    try:
-        attributes = Attribute.objects.all()
-        if "category" in request.GET:
-            attributes = attributes.filter(category=request.GET["category"])
-        if "sub_category" in request.GET:
-            attributes = attributes.filter(sub_category=request.GET["sub_category"])
+    try:    
+        attributes = Attribute.objects.filter(category=int(request.GET["category"]))
+        attributes = attributes.union(attributes, Attribute.objects.filter(sub_category=int(request.GET["sub_category"])))
         if "variant" in request.GET:
-            attributes = attributes.filter(variant=request.GET["variant"])
+            attributes = attributes.union(attributes, Attribute.objects.filter(variant=int(request.GET["variant"])))
 
         serializer = AttributeSerializer(attributes, many=True)
-        return Response({"message": "Variants fetched successfully", "data": serializer.data}, status=200)
+        return Response({"message": "Attributes fetched successfully", "data": serializer.data}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
     
